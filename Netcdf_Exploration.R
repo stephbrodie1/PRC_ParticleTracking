@@ -15,8 +15,8 @@ library(ggplot2)
 #-----Create loop to loop through each year------
 
 file_names <- list.files("~/Dropbox/PRC Particle Tracking/Parcels_output_total/Mon_11_-6_Box_36_38_1_4/", full.names = TRUE)
-output <- as.data.frame(matrix(NA,nrow=24,ncol=4))
-colnames(output) <- c("year","prop_30","prop_34","prop_36")
+output <- as.data.frame(matrix(NA,nrow=24,ncol=5))
+colnames(output) <- c("year","prop_30","prop_32","prop_34","prop_36")
 counter=1
 for (f in 1:length(file_names)){
   
@@ -49,7 +49,7 @@ for (f in 1:length(file_names)){
   time_df <- melt(time)
   colnames(time_df) <- c("day","trajectory", "date")
   
-  #Second merge dataframes together (notw you can only merge two dataframes at once)
+  #Second merge dataframes together (not you can only merge two dataframes at once)
   df <- left_join(lon_df,lat_df, by=c("day","trajectory"))
   head(df)
   
@@ -65,29 +65,35 @@ for (f in 1:length(file_names)){
   #-----Make a plot of each trajectory------
   #You don't need to do this in R because the code you already have is great, but adding some code to help me understand
   #Base plotting code
-  # plot(df$lon,df$lat,col=df$trajectory, pch=19)
+  # plot(df$lon,df$lat,col=df$trajectory, pch=19, main=paste0("Year ",year), ylim=c(30,50))
   # map('worldHires',add=TRUE, fill=TRUE, col="grey")
   
   #GGplot code: TBC
   
   #----Time-series: porportion of particles south of X degrees-----
+  #Adjust latitudes depending on whether simulations are FORWARDS or BACKWARDS
+  
   #Count how many particles ended south of 30 degrees
   p_30 <- length(unique(df$trajectory[df$lat<=30])) 
-  #Count how many particles ended south of 30 degrees
+  #Count how many particles ended south of 32 degrees
+  p_32 <- length(unique(df$trajectory[df$lat<=32])) 
+  #Count how many particles ended south of 33 degrees
   p_34 <- length(unique(df$trajectory[ df$lat<=34]))
-  #Count how many particles ended south of 30 degrees
+  #Count how many particles ended south of 36 degrees
   p_36 <- length(unique(df$trajectory[ df$lat<=36]))
   
   p_all <- 171 #because we now 171 unique particles
   prop_30 <- (p_30/p_all)
+  prop_32 <- (p_32/p_all)
   prop_34 <- (p_34/p_all)
   prop_36 <- (p_36/p_all)
   
   #----write out data----
   output[counter,1] <- year
   output[counter,2] <- prop_30
-  output[counter,3] <- prop_34
-  output[counter,4] <- prop_36
+  output[counter,3] <- prop_32
+  output[counter,4] <- prop_34
+  output[counter,5] <- prop_36
   counter = counter +1
   
   #Remember to close the netcdf file 
@@ -98,6 +104,7 @@ summary(output)
 #-----Make Time-series Plots----
 #Basic R code
 plot(output$year,output$prop_30, col="black", type="b", ylim=c(0,1), ylab="Proportion",xlab="Year", main="Proportion of Particles south of X degrees")
+lines(output$year,output$prop_32, col="green", type="b")
 lines(output$year,output$prop_34, col="red", type="b")
 lines(output$year,output$prop_36, col="blue", type="b")
 legend("topright",legend=c("30 degrees","34 degrees","36 degrees"),col=c("black","red","blue"), lty=c(1,1,1))
