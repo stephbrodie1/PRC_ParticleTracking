@@ -107,7 +107,7 @@ plot(output$year,output$prop_30, col="black", type="b", ylim=c(0,1), ylab="Propo
 lines(output$year,output$prop_32, col="green", type="b")
 lines(output$year,output$prop_34, col="red", type="b")
 lines(output$year,output$prop_36, col="blue", type="b")
-legend("topright",legend=c("30 degrees","34 degrees","36 degrees"),col=c("black","red","blue"), lty=c(1,1,1))
+legend("topright",legend=c("30 degrees","32 degrees","34 degrees","36 degrees"),col=c("black","green","red","blue"), lty=c(1,1,1))
 
 #-----END------
 
