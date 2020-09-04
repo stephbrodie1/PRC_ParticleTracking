@@ -11,6 +11,8 @@ library(maps)
 library(maptools)
 library(mapdata)
 library(ggplot2)
+library(gganimate)
+library(gifski)
 
 #-----Create loop to loop through each year------
 
@@ -69,6 +71,30 @@ for (f in 1:length(file_names)){
   # map('worldHires',add=TRUE, fill=TRUE, col="grey")
   
   #GGplot code: TBC
+  
+  #Animated GGplot
+  #CAUTION: make sure you comment this out if you don't need it, otherwise the loop will take MUCH longer as each animation takes a while to render. 
+  #Making this as a first step to understand which points are getting stuck on land
+  animate_map <- ggplot(data = df, aes(x=lon,y=lat))+
+    geom_point()+
+    theme_classic() +  labs(y="", x="") +
+    theme(legend.position="right",legend.title = element_blank())+
+    theme( panel.border = element_rect(colour = "black", fill=NA, size=1)) + #makes a box
+    # scale_fill_gradientn(colours = cmocean("matter")(256),limits = c(0, max(dat$abundance))) +
+    annotation_map(map_data("world"), colour = "black", fill="grey50")+
+    coord_quickmap(xlim=c(-134,-115.8),ylim=c(30,48)) +  #Sets aspect ratio
+    scale_x_continuous(expand = c(0, 0)) +  scale_y_continuous(expand = c(0, 0))+
+    transition_time(date)+
+    ease_aes("linear") +
+    labs(title="Backwards Trajectory 171 Particles {frame_time}") #takes some time
+  animated <- gganimate::animate(animate_map,nframes = 214, fps=5, renderer = gifski_renderer(), rewind=TRUE)#renders in
+  anim_save(paste0('AnimatedMap_Trajectory_backwards_',year,'.gif'), animated)
+  
+  #-----how to query if particles get stuck-----
+  #super simple at this stage
+  n_stuck <- as.numeric(summary(duplicated(df[,c(3,4)]))[3]) #number of days particles stay in the same place 
+  print(paste0("Percent of time stuck on land ", (1-(36594-n_stuck)/36594)*100))
+  # which(duplicated(df[,c(3,4)])) #index of which particles and days they are getting stuck
   
   #----Time-series: porportion of particles south of X degrees-----
   #Adjust latitudes depending on whether simulations are FORWARDS or BACKWARDS
