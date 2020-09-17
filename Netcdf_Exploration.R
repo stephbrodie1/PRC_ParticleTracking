@@ -13,6 +13,7 @@ library(mapdata)
 library(ggplot2)
 library(gganimate)
 library(gifski)
+library(cmocean)
 
 #-----Create loop to loop through each year------
 
