@@ -90,6 +90,9 @@ for (f in 1:length(file_names)){
   animated <- gganimate::animate(animate_map,nframes = 214, fps=5, renderer = gifski_renderer(), rewind=TRUE)#renders in
   anim_save(paste0('AnimatedMap_Trajectory_backwards_',year,'.gif'), animated)
   
+  #Next step for Steph: add in velocity field data for the animations
+  #Also zoom in on an area where particles are stuck and look at the velocity fields (i.e. are they being pushed onshore by currents)
+  
   #-----how to query if particles get stuck-----
   #super simple at this stage
   n_stuck <- as.numeric(summary(duplicated(df[,c(3,4)]))[3]) #number of days particles stay in the same place 
