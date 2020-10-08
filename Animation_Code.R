@@ -19,7 +19,7 @@ library(cmocean)
 
 #---Animate velocity data with crab trajectories-----
 
-for(y in c(2015:2016)){ #1994, 2007, 2010, 2012, 2014 have a different file structure, just excluding them for now
+for(y in c(1993,1995:2006,2008,2009,2011,2013,2015,2016)){ #1994, 2007, 2010, 2012, 2014 have a different file structure, just excluding them for now
   vel_output <- as.data.frame(matrix(NA,nrow=85600,ncol=9))
   colnames(vel_output) <- c("lon","lat","u","v", "vel","lats","lons","year","DOY")
   counter=1
