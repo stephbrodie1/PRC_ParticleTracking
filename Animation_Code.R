@@ -4,6 +4,8 @@
 #Written by Steph
 #Sep 25 2020
 
+# Testing the method
+
 #----load librarys-----
 library(ncdf4)
 library(raster)
