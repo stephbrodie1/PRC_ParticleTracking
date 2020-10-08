@@ -22,9 +22,10 @@ library(cmocean)
 #---Animate velocity data with crab trajectories-----
 
 for(y in c(1993,1995:2006,2008,2009,2011,2013,2015,2016)){ #1994, 2007, 2010, 2012, 2014 have a different file structure, just excluding them for now
+  print(paste0("I'm now working on Year ",y))
+  #Step 1: get velocity data
   vel_output <- as.data.frame(matrix(NA,nrow=85600,ncol=9))
   colnames(vel_output) <- c("lon","lat","u","v", "vel","lats","lons","year","DOY")
-  counter=1
   
   files <- list.files(paste0("~/Dropbox/PRC Particle Tracking/Velocity_NetCDF/",y), full.names = TRUE)
   
@@ -32,8 +33,9 @@ for(y in c(1993,1995:2006,2008,2009,2011,2013,2015,2016)){ #1994, 2007, 2010, 20
   j1 <- as.numeric(format(as.Date(paste0(y,"-05-01"),format="%Y-%m-%d"),"%j"))
   j2 <- as.numeric(format(as.Date(paste0(y,"-11-30"),format="%Y-%m-%d"),"%j"))
   
+  counter=1
   for (f in j1:j2){
-    print(f)
+    print(paste0("Grabbing velocity files for day ",f, " in Year ", y))
     #Open ncfile
     nc <- nc_open(files[f])
     #Get day of year
@@ -70,15 +72,20 @@ for(y in c(1993,1995:2006,2008,2009,2011,2013,2015,2016)){ #1994, 2007, 2010, 20
   }
   vel_output$date <- as.Date(paste0(vel_output$year,vel_output$DOY), format = "%Y%j")
   
+  #Step 2: get red crab
   #get red crab data and merge with vel_output (note this is the same code from Netcdf_Exploration, just more compacted)
+  print(paste0("Now grabbbing red crab trajectory for year ", y))
   tracking_files <- list.files("~/Dropbox/PRC Particle Tracking/Parcels_output_total/Mon_11_-6_Box_36_38_1_4/", full.names = TRUE)
   years <- c(1993:2016)
   idx <- which(years %in% y) #y is in the loop
+  #open nc file
   nc_file <- nc_open(tracking_files[idx])
+  #get variables
   id <- ncvar_get(nc_file,'trajectory') #we don't really need to extract this because the dimension of 171 indicates 171 particles. 
   lat <- ncvar_get(nc_file,'lat') 
   lon <- ncvar_get(nc_file,'lon')
   time <- ncvar_get(nc_file,'time') #time is in seconds since origin date
+  #convert to datafram
   lat_df <- melt(lat) #the 'melt' function does all the hard work to convert to a dataframe with 36594 rows (214 * 171) 
   colnames(lat_df) <- c("day","trajectory", "lat") #give our dataframe columnnames that make sense
   lon_df <- melt(lon)
@@ -86,31 +93,38 @@ for(y in c(1993,1995:2006,2008,2009,2011,2013,2015,2016)){ #1994, 2007, 2010, 20
   time_df <- melt(time)
   colnames(time_df) <- c("day","trajectory", "date")
   df <- left_join(lon_df,lat_df, by=c("day","trajectory"))
+  #Convert time to something logical
   time_origin <- nc_file$var$time$units #get origin from netcdf file. Note that I could just manually type the origin date in, but it's better to get it from the file metadata so we can loop through files 
   time_origin <- unlist(strsplit(time_origin," "))[3] #split text string by "space", then unlist (strsplit function automatically returns a list), then take the third chunk which contains our date of interest
   time_df$date <- as.Date(time_df$date/86400, origin=time_origin) #convert to sensible time, with 86400 seconds in a day and origin from the netcdf file
-  nc_close(nc_file)
   #Now add time to 'df'
   df <- left_join(df,time_df, by=c("day","trajectory"))
   colnames(df) <- c("day","trajectory","lon_tj","lat_tj","date")
   df <- df[df$lat_tj<=40 & df$lat_tj>=35,]
   df <- df[df$lon_tj<=-120 & df$lon_tj>=-125,]
+
+  #close crab nc file
+  nc_close(nc_file)
   
 
-  # d = "1993-05-01" #[vel_output$date==d,]
+  #Step 3: make the animation
+  #Data file 1: vel_output --> velocity data from step 1
+  #Data file 2: df --> crab tracking from step 2
+  
+  print(paste0("Now making the animation for Year ",y))
   vel_animated <- ggplot(data=vel_output,aes(x=lons,y=lats))+
     geom_tile(aes(fill=vel))+
-    scale_fill_gradientn(colours = cmocean("speed")(256)) +
+    scale_fill_gradientn(colours = cmocean("speed")(256)) + #color scale 
     theme_classic()+
     labs(x = "", y = "")+
-    annotation_map(map_data("world"), colour = "black", fill="grey50")+
+    annotation_map(map_data("world"), colour = "black", fill="grey50")+ #adding a map
     coord_quickmap(xlim=c(-125,-120),ylim=c(35,40)) +  #Sets aspect ratio
-    scale_x_continuous(expand = c(0, 0)) +  scale_y_continuous(expand = c(0, 0))+
-    theme(panel.border = element_rect(colour = "black", fill=NA, size=1))+
-    geom_segment(data = vel_output, 
+    scale_x_continuous(expand = c(0, 0)) +  scale_y_continuous(expand = c(0, 0))+ #way to get rid of the gap between axis and data
+    theme(panel.border = element_rect(colour = "black", fill=NA, size=1))+ #box around the plot area
+    geom_segment(data = vel_output, #plots the velocity arrows
                  aes(x = lons, xend = lons+u, y = lats, 
                      yend = lats+v), arrow = arrow(length = unit(0.2, "cm")))+
-    geom_point(data = df, aes(x=lon_tj,y=lat_tj,col="red"))+
+    geom_point(data = df, aes(x=lon_tj,y=lat_tj,col="red"))+ #plotting the red crab data
     transition_time(date)+
     ease_aes("linear") +
     labs(title="Velocity Fields: Day {frame_time}") #takes some time
