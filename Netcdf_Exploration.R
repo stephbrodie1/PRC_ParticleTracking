@@ -19,7 +19,7 @@ library(cmocean)
 
 #-----Create loop to loop through each MONTH------
 
-file_names <- list.files("~/Dropbox/PRC Particle Tracking/Parcels_output_total/backwardsfrommontereyreleasedfor1month/", full.names = TRUE)
+file_names <- list.files("/Users/esaraf/Desktop/NOAA/Jan_12_Plots/Forward_BAJA/2015/", full.names = TRUE)
 output <- as.data.frame(matrix(NA,nrow=12,ncol=5))
 colnames(output) <- c("month","prop_30","prop_32","prop_34","prop_36")
 counter=1
@@ -31,7 +31,7 @@ for (f in 1:length(file_names)){
   # print(nc_file) #geolocation of 171 tracks for 214 days, at the surface.
   
   #grab year from filename 
-  month <- as.numeric(unlist(strsplit(file_names[f],"_"))[9])
+  month <- as.numeric(unlist(strsplit(file_names[f],"_"))[10])
   print(month)
   
   #----Extract variables from Netcdf-----
@@ -137,7 +137,7 @@ summary(output)
 #-----Make Time-series Plots----
 #Basic R code
 output <- output[order(output$month),] #month is out of order
-plot(output$month,output$prop_30, col="black", type="b", ylim=c(0,1), ylab="Proportion",xlab="Month", main="Proportion of Particles south of X degrees")
+plot(output$month,output$prop_30, col="black", type="b", xlim=c(1,12), ylim=c(0,1), ylab="Proportion",xlab="Month", main="Proportion of Particles south of X degrees")
 lines(output$month,output$prop_32, col="green", type="b")
 lines(output$month,output$prop_34, col="red", type="b")
 lines(output$month,output$prop_36, col="blue", type="b")
