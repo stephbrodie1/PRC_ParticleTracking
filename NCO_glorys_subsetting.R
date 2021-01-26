@@ -6,15 +6,18 @@
 
 #To install NCO, and to see a good summary of what it can do go here: https://github.com/elhazen/NCO_ERD
 
-#---library----
+#---librarys----
 library(glue)
 
 #----Subset u,v,s,t for CCS----
 #Loop through global glorys historical netcdf files (using nested loops because of folder structure)
 #Create new netcdfs for CCS domain for variables u, v, salinity, temp
 
+#Prepare in and out directories
 dir <- "/Volumes/Triple_Bottom_Line/Data/GlobalData/CMEMS_MLD_New/Historical/"
 out_dir <- '/Volumes/Triple_Bottom_Line/Steph_working/PRC/velocity_nc_0-500/'
+
+#Loop through all years and months
 for (y in 1993:2017){
   for (m in c("01","02","03","04","05","06","07","08","09","10","11","12")){
     print(glue("running year {y} and month {m}"))
